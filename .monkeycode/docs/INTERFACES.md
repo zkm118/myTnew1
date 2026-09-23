@@ -96,6 +96,8 @@
 | DELETE | `/api/v1/products/{product_id}` | 删除产品（无关联设备时） |
 | GET | `/api/v1/products/{product_id}/thing-model` | 查询物模型 |
 | PUT | `/api/v1/products/{product_id}/thing-model` | 保存物模型（含版本号） |
+| GET | `/api/v1/products/{product_id}/display-config` | 查询展示配置 |
+| PUT | `/api/v1/products/{product_id}/display-config` | 保存展示配置（驱动客户端渲染） |
 
 物模型结构：
 

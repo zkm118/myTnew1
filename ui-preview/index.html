@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>link_equipment · 体脂秤小程序界面</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #8B5CF6;
+      --on-primary: #FFFFFF;
+      --secondary: #C4B5FD;
+      --accent: #059669;
+      --background: #FAF5FF;
+      --foreground: #4C1D95;
+      --muted: #EDEFF9;
+      --border: #EDE9FE;
+      --destructive: #DC2626;
+      --card: #FFFFFF;
+      --text-secondary: #6D5B9A;
+      --online: #059669;
+      --offline: #94A3B8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Raleway, system-ui, sans-serif;
+      background: linear-gradient(180deg, #F3E8FF 0%, #EEF2FF 40%, #F8FAFC 100%);
+      color: var(--foreground);
+      min-height: 100vh;
+    }
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    h1, .display { font-family: Lora, Georgia, serif; }
+    .hero { margin-bottom: 28px; }
+    .hero h1 { font-size: 32px; letter-spacing: -0.02em; }
+    .hero p { margin-top: 8px; color: var(--text-secondary); font-size: 15px; line-height: 1.6; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 20px 0 28px;
+    }
+    .tab {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+      transition: 180ms ease;
+    }
+    .tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      align-items: start;
+    }
+    .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .caption {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: var(--background);
+      border-radius: 40px;
+      border: 10px solid #1E1B4B;
+      box-shadow: 0 24px 60px rgba(76, 29, 149, 0.18);
+      overflow: hidden;
+      position: relative;
+      display: none;
+    }
+    .phone.show { display: flex; flex-direction: column; }
+    .status-bar {
+      height: 44px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 22px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--foreground);
+    }
+    .nav {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+    .nav h2 { font-size: 18px; font-family: Lora, serif; }
+    .icon-btn {
+      width: 44px; height: 44px;
+      display: grid; place-items: center;
+      border: 0; background: transparent; cursor: pointer; color: var(--foreground);
+    }
+    .content {
+      flex: 1;
+      overflow: auto;
+      padding: 0 16px 88px;
+    }
+    .tabbar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 72px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding-bottom: 12px;
+    }
+    .tabbar button {
+      border: 0; background: transparent; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; color: var(--text-secondary); font-size: 11px; font-weight: 600;
+    }
+    .tabbar button.active { color: var(--primary); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .device-card {
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+      min-height: 72px;
+    }
+    .device-icon {
+      width: 48px; height: 48px; border-radius: 16px;
+      background: #F3E8FF; color: var(--primary);
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+    .grow { flex: 1; min-width: 0; }
+    .name { font-weight: 700; font-size: 15px; }
+    .sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot.on { background: var(--online); }
+    .dot.off { background: var(--offline); }
+    .hero-metric {
+      background: linear-gradient(160deg, #7C3AED 0%, #6D28D9 55%, #059669 140%);
+      color: #fff;
+      border: 0;
+    }
+    .hero-metric .label { opacity: 0.85; font-size: 12px; font-weight: 600; }
+    .hero-metric .value {
+      font-family: Lora, serif;
+      font-size: 48px;
+      line-height: 1.1;
+      margin: 8px 0 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-metric .unit { font-size: 16px; font-weight: 600; margin-left: 4px; }
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .metric {
+      background: rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .metric .k { font-size: 11px; opacity: 0.85; }
+    .metric .v { font-size: 16px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .range {
+      display: flex; gap: 8px; margin: 4px 0 12px;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-height: 36px;
+    }
+    .chip.active { background: #F3E8FF; color: var(--primary); border-color: #DDD6FE; }
+    .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .history-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .history-item:last-child { border-bottom: 0; }
+    .time { width: 72px; font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+    .vals { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 12px; }
+    .vals b { font-variant-numeric: tabular-nums; }
+    .empty {
+      margin-top: 72px;
+      text-align: center;
+      padding: 24px 12px;
+    }
+    .empty-icon {
+      width: 72px; height: 72px; margin: 0 auto 16px;
+      border-radius: 24px; background: #F3E8FF; color: var(--primary);
+      display: grid; place-items: center;
+    }
+    .empty h3 { font-family: Lora, serif; font-size: 20px; margin-bottom: 8px; }
+    .empty p { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+    .cta {
+      margin-top: 20px;
+      width: 100%;
+      height: 48px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .muted-cta {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+    .login-body { padding-top: 48px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+    .field input {
+      width: 100%; height: 48px; border-radius: 14px;
+      border: 1px solid var(--border); padding: 0 14px; font-size: 16px;
+      background: #fff; color: var(--foreground);
+    }
+    .row { display: flex; gap: 8px; }
+    .row input { flex: 1; }
+    .send {
+      height: 48px; min-width: 108px; border-radius: 14px;
+      border: 1px solid var(--border); background: #F3E8FF; color: var(--primary);
+      font-weight: 700; cursor: pointer;
+    }
+    svg { display: block; }
+    @media (max-width: 420px) {
+      .phone { width: 100%; height: 720px; border-radius: 24px; border-width: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>体脂秤小程序界面</h1>
+      <p>按需求文档：设备列表、数据详情（最近一次测量 / 近 30 天趋势 / 历史记录）、无设备空状态。核心指标：体重、体脂率、肌肉量、水分率。</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-screen="list">设备列表</button>
+      <button class="tab" data-screen="detail">数据详情</button>
+      <button class="tab" data-screen="empty">空状态</button>
+      <button class="tab" data-screen="login">登录</button>
+    </div>
+
+    <div class="gallery">
+      <div class="phone-wrap">
+        <div class="caption" id="caption">设备列表 · 已绑定 2 台秤</div>
+        <div class="phone show" id="screen-list">
+          <div class="status-bar"><span>9:41</span><span>5G</span></div>
+          <div class="nav">
+            <h2>我的设备</h2>
+            <button class="icon-btn" aria-label="添加设备">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5v12M5 11h12"/></svg>
+            </button>
+          </div>
+          <div class="content">
+            <article class="card device-card">
+              <div class="device-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="14" height="10" rx="2"/><path d="M7 8V6a4 4 0 0 1 8 0v2"/></svg>
+              </div>
+              <div class="grow">
+                <div class="name">客厅体脂秤</div>
+                <div class="sub"><span class="dot on"></span>在线 · 今天 07:32 已同步</div>
+              </div>
+              <svg width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M6 4l6 4-6 4"/></svg>
+            </article>
+            <article class="card device-card">
+              <div class="device-icon">
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="14" height="10" rx="2"/><path d="M7 8V6a4 4 0 0 1 8 0v2"/></svg>
+              </div>
+              <div class="grow">
+                <div class="name">主卧体脂秤</div>
+                <div class="sub"><span class="dot off"></span>离线 · 昨天 21:08</div>
+              </div>
+              <svg width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M6 4l6 4-6 4"/></svg>
+            </article>
+          </div>
+          <nav class="tabbar">
+            <button class="active"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="12" rx="2"/></svg>设备</button>
+            <button><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14l4-4 3 3 5-6"/></svg>数据</button>
+            <button><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="7" r="3"/><path d="M4 17c1.2-3 3.2-4 6-4s4.8 1 6 4"/></svg>我的</button>
+          </nav>
+        </div>
+
+        <div class="phone" id="screen-detail">
+          <div class="status-bar"><span>9:41</span><span>5G</span></div>
+          <div class="nav">
+            <button class="icon-btn" aria-label="返回"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 5l-7 6 7 6"/></svg></button>
+            <h2>客厅体脂秤</h2>
+            <span class="sub" style="width:44px;text-align:right"><span class="dot on"></span>在线</span>
+          </div>
+          <div class="content">
+            <section class="card hero-metric">
+              <div class="label">最近一次测量 · 今天 07:32</div>
+              <div class="value">68.2<span class="unit">kg</span></div>
+              <div class="metrics">
+                <div class="metric"><div class="k">体脂率</div><div class="v">22.4%</div></div>
+                <div class="metric"><div class="k">肌肉量</div><div class="v">48.1kg</div></div>
+                <div class="metric"><div class="k">水分率</div><div class="v">55.6%</div></div>
+              </div>
+            </section>
+            <div class="range">
+              <span class="chip">近 7 天</span>
+              <span class="chip active">近 30 天</span>
+              <span class="chip">近 90 天</span>
+            </div>
+            <section class="card">
+              <div class="chart-title">体重趋势 kg</div>
+              <svg viewBox="0 0 320 120" width="100%" height="120" aria-label="体重趋势图">
+                <polyline fill="none" stroke="#C4B5FD" stroke-width="1" points="16,90 70,82 124,70 178,74 232,58 288,48" />
+                <polyline fill="none" stroke="#8B5CF6" stroke-width="2.5" points="16,88 70,76 124,64 178,68 232,50 288,42" />
+                <circle cx="288" cy="42" r="4" fill="#059669" />
+              </svg>
+            </section>
+            <section class="card">
+              <div class="chart-title">体脂率趋势 %</div>
+              <svg viewBox="0 0 320 120" width="100%" height="120" aria-label="体脂率趋势图">
+                <polyline fill="none" stroke="#A7F3D0" stroke-width="1" points="16,50 70,58 124,62 178,54 232,60 288,48" />
+                <polyline fill="none" stroke="#059669" stroke-width="2.5" points="16,46 70,54 124,58 178,50 232,56 288,44" />
+                <circle cx="288" cy="44" r="4" fill="#8B5CF6" />
+              </svg>
+            </section>
+            <section class="card">
+              <div class="chart-title">历史测量</div>
+              <div class="history-item">
+                <div class="time">09-21<br>07:32</div>
+                <div class="vals"><span>体重 <b>68.2</b></span><span>体脂 <b>22.4%</b></span><span>肌肉 <b>48.1</b></span><span>水分 <b>55.6%</b></span></div>
+              </div>
+              <div class="history-item">
+                <div class="time">09-18<br>07:28</div>
+                <div class="vals"><span>体重 <b>68.6</b></span><span>体脂 <b>22.8%</b></span><span>肌肉 <b>47.9</b></span><span>水分 <b>55.1%</b></span></div>
+              </div>
+              <div class="history-item">
+                <div class="time">09-14<br>21:05</div>
+                <div class="vals"><span>体重 <b>69.0</b></span><span>体脂 <b>23.1%</b></span><span>肌肉 <b>47.7</b></span><span>水分 <b>--</b></span></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="phone" id="screen-empty">
+          <div class="status-bar"><span>9:41</span><span>5G</span></div>
+          <div class="nav"><h2>我的设备</h2><span style="width:44px"></span></div>
+          <div class="content">
+            <div class="empty">
+              <div class="empty-icon">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="12" width="20" height="14" rx="2"/><path d="M10 12V9a6 6 0 0 1 12 0v3"/></svg>
+              </div>
+              <h3>还没有体脂秤</h3>
+              <p>绑定设备后，称重数据会同步到这里，可查看体重、体脂率与趋势。</p>
+              <button class="cta">添加设备</button>
+            </div>
+          </div>
+          <nav class="tabbar">
+            <button class="active"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="12" rx="2"/></svg>设备</button>
+            <button><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14l4-4 3 3 5-6"/></svg>数据</button>
+            <button><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="7" r="3"/><path d="M4 17c1.2-3 3.2-4 6-4s4.8 1 6 4"/></svg>我的</button>
+          </nav>
+        </div>
+
+        <div class="phone" id="screen-login">
+          <div class="status-bar"><span>9:41</span><span>5G</span></div>
+          <div class="nav"><span style="width:44px"></span><h2>登录</h2><span style="width:44px"></span></div>
+          <div class="content login-body">
+            <h2 class="display" style="font-size:28px;margin-bottom:8px">查看你的身体数据</h2>
+            <p class="sub" style="margin-bottom:28px;line-height:1.6">使用手机号验证码登录后，即可管理已绑定的体脂秤。</p>
+            <div class="field">
+              <label for="phone">手机号</label>
+              <input id="phone" type="tel" inputmode="numeric" placeholder="请输入手机号" />
+            </div>
+            <div class="field">
+              <label for="code">验证码</label>
+              <div class="row">
+                <input id="code" type="tel" inputmode="numeric" placeholder="6 位验证码" />
+                <button class="send" type="button">获取验证码</button>
+              </div>
+            </div>
+            <button class="cta">登录</button>
+            <p class="sub" style="margin-top:16px;text-align:center">管理员请使用 Web 后台账号密码登录</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const captions = {
+      list: "设备列表 · 已绑定 2 台秤",
+      detail: "数据详情 · 最近一次 + 近 30 天趋势 + 历史",
+      empty: "空状态 · 引导添加设备",
+      login: "登录 · 手机号 + 验证码"
+    };
+    const tabs = document.querySelectorAll(".tab");
+    const phones = document.querySelectorAll(".phone");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        const id = tab.dataset.screen;
+        phones.forEach((p) => p.classList.toggle("show", p.id === "screen-" + id));
+        document.getElementById("caption").textContent = captions[id];
+      });
+    });
+  </script>
+</body>
+</html>
